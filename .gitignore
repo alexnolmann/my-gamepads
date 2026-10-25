@@ -1,0 +1,17 @@
+**/bin/
+**/obj/
+/artifacts/
+/dist/
+/app/
+/app-updated/
+.vs/
+*.user
+*.suo
+*.log
+*.log.old
+diagnostics.json
+probe.json
+tests.txt
+layout-check.json
+setup-tests.json
+driver-check.txt
