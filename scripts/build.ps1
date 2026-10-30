@@ -1,4 +1,4 @@
-param([switch]$CheckLayout)
+param([switch]$CheckLayout, [switch]$UpdateExample)
 
 Set-StrictMode -Version Latest
 $projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
@@ -44,7 +44,7 @@ try {
     $releaseDir = Join-Path $projectRoot "dist/MyGamepads-$version-win-x64"
     Reset-GeneratedDirectory -Path $releaseDir -AllowedRoot (Join-Path $projectRoot 'dist')
     Copy-Item -LiteralPath $publishExe -Destination (Join-Path $releaseDir 'MyGamepads.exe') -Force -ErrorAction Stop
-    Copy-Item -LiteralPath 'README.md','LICENSE','THIRD-PARTY-NOTICES.txt' -Destination $releaseDir -Force -ErrorAction Stop
+    Copy-Item -LiteralPath 'README.md','AGENTS.md','LICENSE','THIRD-PARTY-NOTICES.txt' -Destination $releaseDir -Force -ErrorAction Stop
     Copy-Item -LiteralPath 'docs','licenses' -Destination $releaseDir -Recurse -Force -ErrorAction Stop
     $binaryZip = Join-Path $projectRoot "dist/MyGamepads-$version-win-x64.zip"
     Compress-Archive -Path (Join-Path $releaseDir '*') -DestinationPath $binaryZip -Force -ErrorAction Stop
@@ -52,7 +52,7 @@ try {
     # Explicit allow-list: no logs, HID dumps, local paths or build caches in source release.
     $sourceStage = Join-Path $projectRoot 'artifacts/source'
     Reset-GeneratedDirectory -Path $sourceStage -AllowedRoot (Join-Path $projectRoot 'artifacts')
-    $sourceFiles = @('README.md','LICENSE','THIRD-PARTY-NOTICES.txt','CHANGELOG.md','MyGamepads.slnx','Directory.Build.props','global.json','.gitignore','.editorconfig')
+    $sourceFiles = @('README.md','AGENTS.md','LICENSE','THIRD-PARTY-NOTICES.txt','CHANGELOG.md','MyGamepads.slnx','Directory.Build.props','global.json','.gitignore','.editorconfig')
     Copy-Item -LiteralPath $sourceFiles -Destination $sourceStage -Force -ErrorAction Stop
     foreach ($folder in @('docs','drivers','scripts','licenses')) { Copy-Item -LiteralPath $folder -Destination $sourceStage -Recurse -Force -ErrorAction Stop }
     $sourceApp = Join-Path $sourceStage 'src/MyGamepads'
@@ -67,6 +67,7 @@ try {
         '{0}  {1}' -f $hash.Hash.ToLowerInvariant(),[IO.Path]::GetRelativePath((Join-Path $projectRoot 'dist'),$file).Replace('\','/')
     }
     Set-Content -LiteralPath 'dist/SHA256SUMS.txt' -Value $hashLines -Encoding utf8 -ErrorAction Stop
+    if ($UpdateExample) { & (Join-Path $PSScriptRoot 'Update-Example.ps1') -Archive $binaryZip -Version $version }
     Write-Output "Release ready: $binaryZip"
     Write-Output "Source ready: $sourceZip"
 }
